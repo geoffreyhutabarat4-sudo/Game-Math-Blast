@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Blast - Game Matematika Dasar</title>
+  <meta name="description" content="Game edukasi matematika bergaya Block Blast. Susun blok, jawab soal matematika, raih skor tertinggi!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <div id="screen-start" class="screen active">
+    <div class="start-card">
+      <div class="game-logo">
+        <span class="logo-icon">🔢</span>
+        <h1>Math<span class="accent">Blast</span></h1>
+        <p class="tagline">Pecahkan Blok, Kuasai Matematika!</p>
+      </div>
+      <div class="difficulty-select">
+        <p>Pilih Tingkat Kesulitan:</p>
+        <div class="diff-buttons">
+          <button class="diff-btn active" data-level="1" id="btn-easy">😊 Mudah<br><small>Penjumlahan</small></button>
+          <button class="diff-btn" data-level="2" id="btn-medium">🤔 Sedang<br><small>+ Pengurangan</small></button>
+          <button class="diff-btn" data-level="3" id="btn-hard">🔥 Sulit<br><small>+ Perkalian</small></button>
+        </div>
+      </div>
+      <button id="btn-start" class="btn-primary">🚀 Mulai Bermain</button>
+      <div class="how-to"><p>💡 <strong>Cara main:</strong> Klik blok → Klik grid untuk meletakkan → Jawab soal saat baris/kolom penuh!</p></div>
+      <div class="high-score-display"><span>🏆 Skor Tertinggi:</span><span id="start-high-score">0</span></div>
+    </div>
+  </div>
+  <div id="screen-game" class="screen">
+    <header class="game-hud">
+      <div class="hud-panel">
+        <div class="hud-label">⭐ SKOR</div>
+        <div class="hud-value" id="score-display">0</div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-level" id="level-display">Level 1</div>
+        <div class="level-progress-bar"><div id="level-progress" class="level-progress-fill"></div></div>
+      </div>
+      <div class="hud-panel right">
+        <div class="hud-label">🔥 COMBO</div>
+        <div class="hud-value combo" id="combo-display">x1</div>
+      </div>
+    </header>
+    <div class="game-area">
+      <div class="side-panel" id="side-left">
+        <div class="info-card"><div class="info-label">🏆 Tertinggi</div><div class="info-value" id="high-score-display">0</div></div>
+        <div class="info-card"><div class="info-label">📏 Baris</div><div class="info-value" id="lines-display">0</div></div>
+        <button id="btn-pause" class="btn-icon" title="Pause">⏸️</button>
+      </div>
+      <div class="grid-container"><div id="game-grid"></div></div>
+      <div class="side-panel right" id="side-right">
+        <div class="info-card tip"><div class="info-label">💡 Tips</div><div class="tip-text">Isi baris atau kolom penuh, jawab soal, raih bonus!</div></div>
+        <div class="info-card"><div class="info-label">🎯 Ke Level</div><div class="info-value" id="next-level-display">2</div><div class="info-sublabel" id="lines-to-next">8 baris lagi</div></div>
+      </div>
+    </div>
+    <div class="piece-tray">
+      <div class="piece-slot" id="piece-slot-0" data-idx="0"></div>
+      <div class="piece-slot" id="piece-slot-1" data-idx="1"></div>
+      <div class="piece-slot" id="piece-slot-2" data-idx="2"></div>
+    </div>
+    <div class="tray-hint" id="tray-hint">👆 Klik blok di atas, lalu klik grid untuk meletakkan</div>
+  </div>
+  <div id="math-modal" class="modal-overlay hidden">
+    <div class="modal-card math-modal-card">
+      <div class="math-modal-header">
+        <span class="math-icon">🧮</span>
+        <h2>Jawab Soal Matematika!</h2>
+        <div class="lines-info" id="math-lines-info">Kamu membersihkan 1 baris!</div>
+      </div>
+      <div class="timer-section">
+        <div class="timer-bar-container"><div id="math-timer-bar" class="timer-bar"></div></div>
+        <div id="math-timer-text" class="timer-text">6 detik</div>
+      </div>
+      <div class="math-question-container"><div id="math-question" class="math-question">3 + 5 = ?</div></div>
+      <div id="math-options" class="math-options"></div>
+    </div>
+  </div>
+  <div id="result-flash" class="result-flash hidden"><div id="result-flash-text">Benar! +60</div></div>
+  <div id="score-popup-layer"></div>
+  <div id="gameover-modal" class="modal-overlay hidden">
+    <div class="modal-card gameover-card">
+      <div class="gameover-emoji" id="gameover-emoji">😵</div>
+      <h2>Game Over!</h2>
+      <p class="gameover-sub">Tidak ada lagi blok yang bisa diletakkan</p>
+      <div class="gameover-stats">
+        <div class="stat-row"><span>⭐ Skor Akhir</span><span id="final-score" class="stat-value">0</span></div>
+        <div class="stat-row"><span>🏆 Skor Tertinggi</span><span id="final-high-score" class="stat-value">0</span></div>
+        <div class="stat-row"><span>📏 Baris Dibersihkan</span><span id="final-lines" class="stat-value">0</span></div>
+        <div class="stat-row"><span>🎯 Level Tercapai</span><span id="final-level" class="stat-value">1</span></div>
+        <div class="stat-row"><span>🔥 Combo Tertinggi</span><span id="final-combo" class="stat-value">x1</span></div>
+      </div>
+      <div id="new-record-badge" class="new-record hidden">🎉 REKOR BARU!</div>
+      <div class="gameover-buttons">
+        <button id="btn-restart" class="btn-primary">🔄 Main Lagi</button>
+        <button id="btn-home" class="btn-secondary">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+  <div id="pause-modal" class="modal-overlay hidden">
+    <div class="modal-card pause-card">
+      <div class="pause-icon">⏸️</div>
+      <h2>Game Dijeda</h2>
+      <div class="pause-buttons">
+        <button id="btn-resume" class="btn-primary">▶️ Lanjutkan</button>
+        <button id="btn-restart-pause" class="btn-secondary">🔄 Mulai Ulang</button>
+        <button id="btn-home-pause" class="btn-secondary">🏠 Menu Utama</button>
+      </div>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
